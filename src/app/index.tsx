@@ -3,47 +3,56 @@ import { useState } from "react";
 import { ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Colors } from "@/constants/colors";
 import { GameOverScreen } from "@/screens/game-over-screen";
 import { GameScreen } from "@/screens/game-screen";
 import { StartGameScreen } from "@/screens/start-game-screen";
-import { Colors } from "@/constants/colors";
+
+type GameState =
+  | { status: "idle" }
+  | { status: "playing"; userNumber: number }
+  | { status: "over"; userNumber: number; guesses: number[] };
+
+const BACKGROUND_IMAGE_OPACITY = 0.15;
 
 export default function App() {
-  const [userNumber, setUserNumber] = useState<number | null>(null);
-  const [gameIsOver, setGameIsOver] = useState(true);
-  const [guessRounds, setGuessRounds] = useState(0);
+  const [game, setGame] = useState<GameState>({ status: "idle" });
 
-  function pickedNumberHandler(pickedNumber: number) {
-    setUserNumber(pickedNumber);
-    setGameIsOver(false);
+  function pickNumberHandler(userNumber: number) {
+    setGame({ status: "playing", userNumber });
   }
 
-  function gameOverHandler(numberOfRounds: number) {
-    setGameIsOver(true);
-    setGuessRounds(numberOfRounds);
+  function gameOverHandler(guesses: number[]) {
+    if (game.status !== "playing") {
+      return;
+    }
+    setGame({ status: "over", userNumber: game.userNumber, guesses });
   }
 
   function startNewGameHandler() {
-    setUserNumber(null);
-    setGuessRounds(0);
+    setGame({ status: "idle" });
   }
 
-  let screen = <StartGameScreen onPickNumber={pickedNumberHandler} />;
-
-  if (userNumber) {
-    screen = (
-      <GameScreen userNumber={userNumber} onGameOver={gameOverHandler} />
-    );
-  }
-
-  if (gameIsOver && userNumber) {
-    screen = (
-      <GameOverScreen
-        userNumber={userNumber}
-        roundsNumber={guessRounds}
-        onStartNewGame={startNewGameHandler}
-      />
-    );
+  function renderScreen() {
+    switch (game.status) {
+      case "playing":
+        return (
+          <GameScreen
+            userNumber={game.userNumber}
+            onGameOver={gameOverHandler}
+          />
+        );
+      case "over":
+        return (
+          <GameOverScreen
+            userNumber={game.userNumber}
+            guesses={game.guesses}
+            onStartNewGame={startNewGameHandler}
+          />
+        );
+      default:
+        return <StartGameScreen onPickNumber={pickNumberHandler} />;
+    }
   }
 
   return (
@@ -57,7 +66,7 @@ export default function App() {
         style={styles.rootScreen}
         imageStyle={styles.backgroundImage}
       >
-        <SafeAreaView style={styles.rootScreen}>{screen}</SafeAreaView>
+        <SafeAreaView style={styles.rootScreen}>{renderScreen()}</SafeAreaView>
       </ImageBackground>
     </LinearGradient>
   );
@@ -68,6 +77,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backgroundImage: {
-    opacity: 0.15,
+    opacity: BACKGROUND_IMAGE_OPACITY,
   },
 });

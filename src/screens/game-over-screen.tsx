@@ -1,67 +1,100 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { Title } from "@/components/ui/title";
 import { Colors } from "@/constants/colors";
+import { Fonts } from "@/constants/fonts";
 
 type GameOverScreenProps = {
-  roundsNumber: number;
   userNumber: number;
+  guesses: number[];
   onStartNewGame: () => void;
 };
 
+const MAX_IMAGE_SIZE = 300;
+const IMAGE_WIDTH_RATIO = 0.7;
+
 export function GameOverScreen({
-  roundsNumber,
   userNumber,
+  guesses,
   onStartNewGame,
 }: GameOverScreenProps) {
+  const { width } = useWindowDimensions();
+  const imageSize = Math.min(width * IMAGE_WIDTH_RATIO, MAX_IMAGE_SIZE);
+  const roundsNumber = guesses.length;
+
   return (
-    <View style={styles.rootContainer}>
-      <Title>GAME OVER!</Title>
-      <View style={styles.imageContainer}>
+    <ScrollView contentContainerStyle={styles.content}>
+      <Title>Game Over!</Title>
+      <View
+        style={[
+          styles.imageContainer,
+          { width: imageSize, height: imageSize, borderRadius: imageSize / 2 },
+        ]}
+      >
         <Image
           style={styles.image}
           source={require("@/assets/images/guessing-game-success.png")}
         />
       </View>
       <Text style={styles.summaryText}>
-        Your phone needed <Text style={styles.highlight}>{roundsNumber}</Text>{" "}
-        rounds to guess the number{" "}
+        Your phone needed{" "}
+        <Text style={styles.highlight}>{roundsNumber}</Text>{" "}
+        {roundsNumber === 1 ? "round" : "rounds"} to guess the number{" "}
         <Text style={styles.highlight}>{userNumber}</Text>.
       </Text>
-      <PrimaryButton onPress={onStartNewGame}>Start New Game</PrimaryButton>
-    </View>
+      <Text style={styles.guessesText}>{guesses.join("  →  ")}</Text>
+      <PrimaryButton style={styles.button} onPress={onStartNewGame}>
+        Start New Game
+      </PrimaryButton>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  rootContainer: {
-    flex: 1,
+  content: {
+    flexGrow: 1,
     padding: 24,
     justifyContent: "center",
     alignItems: "center",
   },
   imageContainer: {
-    width: 300,
-    height: 300,
-    borderRadius: 150,
     borderWidth: 3,
     borderColor: Colors.primary800,
     overflow: "hidden",
-    margin: 36,
+    marginVertical: 32,
   },
   image: {
     width: "100%",
     height: "100%",
   },
   summaryText: {
-    fontFamily: "open-sans",
-    fontSize: 24,
+    fontFamily: Fonts.regular,
+    fontSize: 22,
+    lineHeight: 32,
+    color: Colors.primary900,
     textAlign: "center",
-    marginBottom: 24,
   },
   highlight: {
-    fontFamily: "open-sans-bold",
+    fontFamily: Fonts.bold,
     color: Colors.primary500,
+  },
+  guessesText: {
+    marginTop: 12,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: Colors.primary700,
+    textAlign: "center",
+  },
+  button: {
+    marginTop: 32,
+    minWidth: 220,
   },
 });
