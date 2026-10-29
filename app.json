@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "meals-app",
-    "slug": "meals-app",
+    "name": "Guess My Number",
+    "slug": "guessing-game",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mealsapp",
-    "userInterfaceStyle": "automatic",
+    "scheme": "guessinggame",
+    "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -28,7 +28,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#4e0329",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
