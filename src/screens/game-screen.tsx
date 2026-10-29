@@ -1,7 +1,8 @@
 import { SymbolView } from "expo-symbols";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, FlatList, StyleSheet, View } from "react-native";
 
+import { GuessLogItem } from "@/components/game/guess-log-item";
 import { NumberContainer } from "@/components/game/number-container";
 import { Card } from "@/components/ui/card";
 import { InstructionText } from "@/components/ui/instruction-text";
@@ -74,6 +75,8 @@ export function GameScreen({ userNumber, onGameOver }: GameScreenProps) {
     setGuessRounds((prevGuessRounds) => [newRndNumber, ...prevGuessRounds]);
   }
 
+  const guessRoundsListLength = guessRounds.length;
+
   return (
     <View style={styles.screen}>
       <Title>Opponent&apos;s Guess</Title>
@@ -103,6 +106,18 @@ export function GameScreen({ userNumber, onGameOver }: GameScreenProps) {
           </View>
         </View>
       </Card>
+      <View style={styles.listContainer}>
+        <FlatList
+          data={guessRounds}
+          renderItem={(itemData) => (
+            <GuessLogItem
+              roundNumber={guessRoundsListLength - itemData.index}
+              guess={itemData.item}
+            />
+          )}
+          keyExtractor={(item) => item.toString()}
+        />
+      </View>
     </View>
   );
 }
@@ -120,5 +135,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
+  },
+  listContainer: {
+    flex: 1,
+    padding: 16,
   },
 });
