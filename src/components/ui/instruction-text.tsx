@@ -2,6 +2,7 @@ import { PropsWithChildren } from "react";
 import { StyleProp, StyleSheet, Text, TextStyle } from "react-native";
 
 import { Colors } from "@/constants/colors";
+import { Fonts } from "@/constants/fonts";
 
 type InstructionTextProps = PropsWithChildren<{
   style?: StyleProp<TextStyle>;
@@ -13,8 +14,9 @@ export function InstructionText({ children, style }: InstructionTextProps) {
 
 const styles = StyleSheet.create({
   instructionText: {
-    fontFamily: "open-sans",
+    fontFamily: Fonts.regular,
     color: Colors.accent500,
-    fontSize: 24,
+    fontSize: 22,
+    textAlign: "center",
   },
 });

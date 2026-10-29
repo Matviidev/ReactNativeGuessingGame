@@ -1,44 +1,84 @@
 import { PropsWithChildren } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 
 import { Colors } from "@/constants/colors";
+import { Fonts } from "@/constants/fonts";
+
+type ButtonVariant = "primary" | "secondary";
 
 type PrimaryButtonProps = PropsWithChildren<{
   onPress: () => void;
+  variant?: ButtonVariant;
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
 }>;
 
-export function PrimaryButton({ children, onPress }: PrimaryButtonProps) {
+export function PrimaryButton({
+  children,
+  onPress,
+  variant = "primary",
+  accessibilityLabel,
+  style,
+}: PrimaryButtonProps) {
+  const isSecondary = variant === "secondary";
+
   return (
-    <View style={styles.buttonOuterContainer}>
+    <View style={[styles.outerContainer, style]}>
       <Pressable
-        style={({ pressed }) =>
-          pressed
-            ? [styles.buttonInnerContainer, styles.pressed]
-            : styles.buttonInnerContainer
-        }
+        style={({ pressed }) => [
+          styles.innerContainer,
+          isSecondary && styles.secondaryContainer,
+          pressed && styles.pressed,
+        ]}
         onPress={onPress}
-        android_ripple={{ color: Colors.primary600 }}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        android_ripple={{
+          color: isSecondary ? Colors.overlay : Colors.primary600,
+        }}
       >
-        <Text style={styles.buttonText}>{children}</Text>
+        {typeof children === "string" ? (
+          <Text style={styles.text}>{children}</Text>
+        ) : (
+          children
+        )}
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  buttonOuterContainer: {
+  outerContainer: {
     borderRadius: 28,
     margin: 4,
     overflow: "hidden",
   },
-  buttonInnerContainer: {
+  innerContainer: {
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Colors.primary500,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: Colors.primary400,
+    borderRadius: 28,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
-  buttonText: {
-    color: "white",
+  secondaryContainer: {
+    backgroundColor: "transparent",
+    borderColor: Colors.accent500,
+  },
+  text: {
+    color: Colors.white,
+    fontFamily: Fonts.bold,
+    fontSize: 16,
     textAlign: "center",
   },
   pressed: {
