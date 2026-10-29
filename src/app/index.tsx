@@ -1,17 +1,23 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+
+import { StartGameScreen } from "@/screens/start-game-screen";
+import { Colors } from "@/constants/colors";
 
 export default function App() {
+  function pickedNumberHandler(pickedNumber: number) {
+    console.log(pickedNumber);
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Guess My Number</Text>
+    <View style={styles.rootScreen}>
+      <StartGameScreen onPickNumber={pickedNumberHandler} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  rootScreen: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: Colors.primary700,
   },
 });
