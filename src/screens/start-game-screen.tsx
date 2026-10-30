@@ -10,12 +10,15 @@ import {
 } from "react-native";
 
 import { Card } from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
 import { InstructionText } from "@/components/ui/instruction-text";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { Title } from "@/components/ui/title";
 import { Colors } from "@/constants/colors";
 import { Fonts } from "@/constants/fonts";
 import { MAX_NUMBER, MIN_NUMBER } from "@/constants/game";
+import { Radius, Spacing } from "@/constants/layout";
+import { webStyle } from "@/utils/web-style";
 
 type StartGameScreenProps = {
   onPickNumber: (pickedNumber: number) => void;
@@ -30,6 +33,7 @@ function isValidNumber(value: number) {
 export function StartGameScreen({ onPickNumber }: StartGameScreenProps) {
   const [enteredNumber, setEnteredNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   function numberInputHandler(enteredText: string) {
     setEnteredNumber(enteredText.replace(/[^0-9]/g, ""));
@@ -45,7 +49,9 @@ export function StartGameScreen({ onPickNumber }: StartGameScreenProps) {
     const chosenNumber = parseInt(enteredNumber, 10);
 
     if (!isValidNumber(chosenNumber)) {
-      setError(`Please enter a number between ${MIN_NUMBER} and ${MAX_NUMBER}.`);
+      setError(
+        `Please enter a number between ${MIN_NUMBER} and ${MAX_NUMBER}.`,
+      );
       return;
     }
 
@@ -61,39 +67,55 @@ export function StartGameScreen({ onPickNumber }: StartGameScreenProps) {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Title>Guess My Number</Title>
-        <Card>
-          <InstructionText>Enter a Number</InstructionText>
-          <Text style={styles.hint}>
-            Pick a number from {MIN_NUMBER} to {MAX_NUMBER} and let your phone
-            guess it.
-          </Text>
-          <TextInput
-            style={[styles.numberInput, error && styles.numberInputInvalid]}
-            maxLength={INPUT_MAX_LENGTH}
-            keyboardType="number-pad"
-            returnKeyType="done"
-            autoCapitalize="none"
-            autoCorrect={false}
-            onChangeText={numberInputHandler}
-            onSubmitEditing={confirmInputHandler}
-            value={enteredNumber}
-            accessibilityLabel="Your number"
-          />
-          {error && <Text style={styles.errorText}>{error}</Text>}
-          <View style={styles.buttonsRow}>
-            <PrimaryButton
-              style={styles.button}
-              variant="secondary"
-              onPress={resetInputHandler}
-            >
-              Reset
-            </PrimaryButton>
-            <PrimaryButton style={styles.button} onPress={confirmInputHandler}>
-              Confirm
-            </PrimaryButton>
-          </View>
-        </Card>
+        <Container style={styles.container}>
+          <Title
+            eyebrow="Number game"
+            subtitle={`Think of a number from ${MIN_NUMBER} to ${MAX_NUMBER}, then give hints while your phone tries to guess it.`}
+          >
+            Guess My Number
+          </Title>
+          <Card style={styles.card}>
+            <InstructionText>Enter your number</InstructionText>
+            <TextInput
+              style={[
+                styles.numberInput,
+                isFocused && styles.numberInputFocused,
+                error && styles.numberInputInvalid,
+              ]}
+              maxLength={INPUT_MAX_LENGTH}
+              keyboardType="number-pad"
+              returnKeyType="done"
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="00"
+              placeholderTextColor={Colors.textSubtle}
+              onChangeText={numberInputHandler}
+              onSubmitEditing={confirmInputHandler}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              value={enteredNumber}
+              accessibilityLabel="Your number"
+            />
+            <Text style={[styles.helperText, error && styles.errorText]}>
+              {error ?? "Your number stays secret, only your hints are shared."}
+            </Text>
+            <View style={styles.buttonsRow}>
+              <PrimaryButton
+                style={styles.button}
+                variant="secondary"
+                onPress={resetInputHandler}
+              >
+                Reset
+              </PrimaryButton>
+              <PrimaryButton
+                style={styles.button}
+                onPress={confirmInputHandler}
+              >
+                Confirm
+              </PrimaryButton>
+            </View>
+          </Card>
+        </Container>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -105,42 +127,56 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 64,
-    paddingBottom: 24,
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
   },
-  hint: {
-    marginTop: 8,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    color: Colors.accent300,
-    textAlign: "center",
+  container: {
+    gap: Spacing.xxl,
+  },
+  card: {
+    alignItems: "center",
+    gap: Spacing.lg,
   },
   numberInput: {
-    width: 72,
-    height: 56,
-    marginTop: 16,
-    marginBottom: 8,
-    fontSize: 32,
+    width: 140,
+    height: 88,
+    fontSize: 48,
     fontFamily: Fonts.bold,
-    color: Colors.accent500,
-    borderBottomColor: Colors.accent500,
-    borderBottomWidth: 2,
+    color: Colors.accent,
     textAlign: "center",
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderStrong,
+    backgroundColor: Colors.surface,
+    ...webStyle({
+      outlineStyle: "none",
+      transitionProperty: "border-color, box-shadow",
+      transitionDuration: "150ms",
+    }),
+  },
+  numberInputFocused: {
+    borderColor: Colors.accent,
+    boxShadow: `0 0 0 4px ${Colors.accentSoft}`,
   },
   numberInputInvalid: {
-    borderBottomColor: Colors.error,
+    borderColor: Colors.error,
+    boxShadow: `0 0 0 4px ${Colors.errorSoft}`,
   },
-  errorText: {
+  helperText: {
+    minHeight: 20,
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: Colors.error,
+    lineHeight: 20,
+    color: Colors.textSubtle,
     textAlign: "center",
+  },
+  errorText: {
+    color: Colors.error,
   },
   buttonsRow: {
     flexDirection: "row",
     alignSelf: "stretch",
-    marginTop: 16,
+    gap: Spacing.md,
   },
   button: {
     flex: 1,

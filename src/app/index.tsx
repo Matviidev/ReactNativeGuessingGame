@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BackgroundGlow } from "@/components/ui/background-glow";
 import { Colors } from "@/constants/colors";
 import { GameOverScreen } from "@/screens/game-over-screen";
 import { GameScreen } from "@/screens/game-screen";
@@ -13,7 +14,7 @@ type GameState =
   | { status: "playing"; userNumber: number }
   | { status: "over"; userNumber: number; guesses: number[] };
 
-const BACKGROUND_IMAGE_OPACITY = 0.15;
+const BACKGROUND_IMAGE_OPACITY = 0.06;
 
 export default function App() {
   const [game, setGame] = useState<GameState>({ status: "idle" });
@@ -57,9 +58,14 @@ export default function App() {
 
   return (
     <LinearGradient
-      colors={[Colors.primary700, Colors.accent500]}
-      style={styles.rootScreen}
+      colors={[
+        Colors.gradientTop,
+        Colors.gradientMiddle,
+        Colors.gradientBottom,
+      ]}
+      style={[styles.rootScreen, styles.gradient]}
     >
+      <BackgroundGlow />
       <ImageBackground
         source={require("@/assets/images/guessing-game-background.png")}
         resizeMode="cover"
@@ -75,6 +81,9 @@ export default function App() {
 const styles = StyleSheet.create({
   rootScreen: {
     flex: 1,
+  },
+  gradient: {
+    backgroundColor: Colors.background,
   },
   backgroundImage: {
     opacity: BACKGROUND_IMAGE_OPACITY,

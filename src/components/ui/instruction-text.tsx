@@ -14,9 +14,10 @@ export function InstructionText({ children, style }: InstructionTextProps) {
 
 const styles = StyleSheet.create({
   instructionText: {
-    fontFamily: Fonts.regular,
-    color: Colors.accent500,
-    fontSize: 22,
+    fontFamily: Fonts.bold,
+    fontSize: 20,
+    lineHeight: 28,
+    color: Colors.text,
     textAlign: "center",
   },
 });

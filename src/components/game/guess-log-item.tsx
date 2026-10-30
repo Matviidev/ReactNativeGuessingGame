@@ -2,18 +2,27 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Colors } from "@/constants/colors";
 import { Fonts } from "@/constants/fonts";
+import { Radius, Spacing } from "@/constants/layout";
 
 type GuessLogItemProps = {
   roundNumber: number;
   guess: number;
+  isLatest?: boolean;
 };
 
-export function GuessLogItem({ roundNumber, guess }: GuessLogItemProps) {
+export function GuessLogItem({
+  roundNumber,
+  guess,
+  isLatest = false,
+}: GuessLogItemProps) {
   return (
-    <View style={styles.listItem}>
-      <Text style={styles.roundText}>#{roundNumber}</Text>
-      <Text style={styles.itemText}>
-        Opponent&apos;s guess: <Text style={styles.guessText}>{guess}</Text>
+    <View style={[styles.listItem, isLatest && styles.latestItem]}>
+      <View style={styles.roundBadge}>
+        <Text style={styles.roundText}>#{roundNumber}</Text>
+      </View>
+      <Text style={styles.itemText}>Opponent&apos;s guess</Text>
+      <Text style={[styles.guessText, isLatest && styles.latestGuessText]}>
+        {guess}
       </Text>
     </View>
   );
@@ -23,29 +32,45 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 24,
+    gap: Spacing.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: Colors.primary800,
-    backgroundColor: Colors.accent500,
-    elevation: 3,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+  },
+  latestItem: {
+    borderColor: Colors.accentBorder,
+    backgroundColor: Colors.accentSoft,
+  },
+  roundBadge: {
+    minWidth: 40,
+    alignItems: "center",
+    paddingVertical: 2,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.surfaceStrong,
   },
   roundText: {
     fontFamily: Fonts.bold,
-    color: Colors.primary700,
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontVariant: ["tabular-nums"],
   },
   itemText: {
+    flex: 1,
     fontFamily: Fonts.regular,
-    color: Colors.primary800,
+    fontSize: 14,
+    color: Colors.textMuted,
   },
   guessText: {
     fontFamily: Fonts.bold,
+    fontSize: 18,
+    color: Colors.text,
+    fontVariant: ["tabular-nums"],
+  },
+  latestGuessText: {
+    color: Colors.accent,
   },
 });

@@ -1,16 +1,25 @@
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import { GuessLogItem } from "@/components/game/guess-log-item";
 import { NumberContainer } from "@/components/game/number-container";
+import { RangeBar } from "@/components/game/range-bar";
 import { Card } from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
 import { InstructionText } from "@/components/ui/instruction-text";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { Title } from "@/components/ui/title";
 import { Colors } from "@/constants/colors";
 import { Fonts } from "@/constants/fonts";
 import { MAX_NUMBER, MIN_NUMBER } from "@/constants/game";
+import { Radius, Spacing, WIDE_BREAKPOINT } from "@/constants/layout";
 import { generateRandomBetween } from "@/utils/random";
 
 type Direction = "lower" | "greater";
@@ -28,6 +37,8 @@ type GameScreenProps = {
 const ICON_SIZE = 24;
 
 export function GameScreen({ userNumber, onGameOver }: GameScreenProps) {
+  const { width } = useWindowDimensions();
+  const isWide = width >= WIDE_BREAKPOINT;
   const [guesses, setGuesses] = useState<number[]>(() => [
     generateRandomBetween(MIN_NUMBER, MAX_NUMBER, userNumber),
   ]);
@@ -35,6 +46,7 @@ export function GameScreen({ userNumber, onGameOver }: GameScreenProps) {
     min: MIN_NUMBER,
     max: MAX_NUMBER,
   });
+  const [isLieWarningVisible, setIsLieWarningVisible] = useState(false);
 
   const currentGuess = guesses[guesses.length - 1];
 
@@ -44,11 +56,11 @@ export function GameScreen({ userNumber, onGameOver }: GameScreenProps) {
       (direction === "greater" && currentGuess > userNumber);
 
     if (isLie) {
-      Alert.alert("Don't lie!", "You know that this is wrong...", [
-        { text: "Sorry!", style: "cancel" },
-      ]);
+      setIsLieWarningVisible(true);
       return;
     }
+
+    setIsLieWarningVisible(false);
 
     const nextBoundaries =
       direction === "lower"
@@ -73,86 +85,156 @@ export function GameScreen({ userNumber, onGameOver }: GameScreenProps) {
   const reversedGuesses = [...guesses].reverse();
 
   return (
-    <View style={styles.screen}>
-      <Title>Opponent&apos;s Guess</Title>
-      <NumberContainer>{currentGuess}</NumberContainer>
-      <Card>
-        <InstructionText>Higher or lower?</InstructionText>
-        <Text style={styles.rangeText}>
-          Searching between {boundaries.min} and {boundaries.max}
-        </Text>
-        <View style={styles.buttonsRow}>
-          <PrimaryButton
-            style={styles.button}
-            onPress={() => nextGuessHandler("lower")}
-            accessibilityLabel="Lower"
-          >
-            <SymbolView
-              name={{ ios: "minus", android: "remove", web: "remove" }}
-              size={ICON_SIZE}
-              tintColor={Colors.white}
-            />
-          </PrimaryButton>
-          <PrimaryButton
-            style={styles.button}
-            onPress={() => nextGuessHandler("greater")}
-            accessibilityLabel="Higher"
-          >
-            <SymbolView
-              name={{ ios: "plus", android: "add", web: "add" }}
-              size={ICON_SIZE}
-              tintColor={Colors.white}
-            />
-          </PrimaryButton>
+    <Container
+      size={isWide ? "wide" : "narrow"}
+      style={[styles.screen, isWide && styles.screenWide]}
+    >
+      <View style={[styles.gamePanel, isWide && styles.gamePanelWide]}>
+        <Title eyebrow={`Round ${guesses.length}`}>Opponent&apos;s Guess</Title>
+        <NumberContainer label="Is it">{currentGuess}</NumberContainer>
+        <Card style={styles.card}>
+          <InstructionText>Higher or lower?</InstructionText>
+          <RangeBar
+            min={MIN_NUMBER}
+            max={MAX_NUMBER}
+            lowerBound={boundaries.min}
+            upperBound={boundaries.max}
+          />
+          <View style={styles.buttonsRow}>
+            <PrimaryButton
+              style={styles.button}
+              variant="secondary"
+              onPress={() => nextGuessHandler("lower")}
+              accessibilityLabel="Lower"
+            >
+              <SymbolView
+                name={{ ios: "minus", android: "remove", web: "remove" }}
+                size={ICON_SIZE}
+                tintColor={Colors.white}
+              />
+            </PrimaryButton>
+            <PrimaryButton
+              style={styles.button}
+              onPress={() => nextGuessHandler("greater")}
+              accessibilityLabel="Higher"
+            >
+              <SymbolView
+                name={{ ios: "plus", android: "add", web: "add" }}
+                size={ICON_SIZE}
+                tintColor={Colors.white}
+              />
+            </PrimaryButton>
+          </View>
+          {isLieWarningVisible && (
+            <Text style={styles.warningText} accessibilityRole="alert">
+              Don&apos;t lie! You know that this is wrong...
+            </Text>
+          )}
+        </Card>
+      </View>
+      <View style={isWide ? styles.logPanelWide : styles.logPanel}>
+        <View style={styles.logHeader}>
+          <Text style={styles.logTitle}>Guess log</Text>
+          <Text style={styles.logCount}>{guesses.length}</Text>
         </View>
-      </Card>
-      <Text style={styles.logTitle}>Guess log</Text>
-      <FlatList
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        data={reversedGuesses}
-        keyExtractor={(guess) => guess.toString()}
-        renderItem={({ item, index }) => (
-          <GuessLogItem roundNumber={guesses.length - index} guess={item} />
-        )}
-      />
-    </View>
+        <FlatList
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          data={reversedGuesses}
+          keyExtractor={(guess) => guess.toString()}
+          renderItem={({ item, index }) => (
+            <GuessLogItem
+              roundNumber={guesses.length - index}
+              guess={item}
+              isLatest={index === 0}
+            />
+          )}
+        />
+      </View>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: Spacing.xxl,
+    gap: Spacing.xxl,
   },
-  rangeText: {
-    marginTop: 4,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    color: Colors.accent300,
+  screenWide: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: Spacing.xxxl,
+  },
+  gamePanel: {
+    gap: Spacing.xl,
+  },
+  gamePanelWide: {
+    flex: 1,
+    alignSelf: "center",
+  },
+  card: {
+    gap: Spacing.xl,
   },
   buttonsRow: {
     flexDirection: "row",
-    alignSelf: "stretch",
-    marginTop: 16,
+    gap: Spacing.md,
   },
   button: {
     flex: 1,
   },
-  logTitle: {
-    marginTop: 24,
-    marginBottom: 4,
+  warningText: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.sm,
+    backgroundColor: Colors.errorSoft,
     fontFamily: Fonts.bold,
-    fontSize: 16,
-    color: Colors.white,
+    fontSize: 14,
+    color: Colors.error,
+    textAlign: "center",
+  },
+  logPanel: {
+    flex: 1,
+  },
+  logPanelWide: {
+    width: 360,
+    alignSelf: "stretch",
+    padding: Spacing.xl,
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+  },
+  logHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Spacing.md,
+  },
+  logTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
-    letterSpacing: 1,
+    color: Colors.textMuted,
+  },
+  logCount: {
+    minWidth: 28,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.surfaceStrong,
+    fontFamily: Fonts.bold,
+    fontSize: 12,
+    color: Colors.text,
+    textAlign: "center",
+    overflow: "hidden",
   },
   list: {
     flex: 1,
   },
   listContent: {
-    paddingBottom: 24,
+    gap: Spacing.sm,
+    paddingBottom: Spacing.xl,
   },
 });

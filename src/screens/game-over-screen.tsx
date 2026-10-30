@@ -7,10 +7,13 @@ import {
   View,
 } from "react-native";
 
+import { Card } from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { Title } from "@/components/ui/title";
 import { Colors } from "@/constants/colors";
 import { Fonts } from "@/constants/fonts";
+import { Radius, Spacing } from "@/constants/layout";
 
 type GameOverScreenProps = {
   userNumber: number;
@@ -18,8 +21,8 @@ type GameOverScreenProps = {
   onStartNewGame: () => void;
 };
 
-const MAX_IMAGE_SIZE = 300;
-const IMAGE_WIDTH_RATIO = 0.7;
+const MAX_IMAGE_SIZE = 240;
+const IMAGE_WIDTH_RATIO = 0.6;
 
 export function GameOverScreen({
   userNumber,
@@ -32,28 +35,46 @@ export function GameOverScreen({
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Title>Game Over!</Title>
-      <View
-        style={[
-          styles.imageContainer,
-          { width: imageSize, height: imageSize, borderRadius: imageSize / 2 },
-        ]}
-      >
-        <Image
-          style={styles.image}
-          source={require("@/assets/images/guessing-game-success.png")}
-        />
-      </View>
-      <Text style={styles.summaryText}>
-        Your phone needed{" "}
-        <Text style={styles.highlight}>{roundsNumber}</Text>{" "}
-        {roundsNumber === 1 ? "round" : "rounds"} to guess the number{" "}
-        <Text style={styles.highlight}>{userNumber}</Text>.
-      </Text>
-      <Text style={styles.guessesText}>{guesses.join("  →  ")}</Text>
-      <PrimaryButton style={styles.button} onPress={onStartNewGame}>
-        Start New Game
-      </PrimaryButton>
+      <Container style={styles.container}>
+        <View
+          style={[
+            styles.imageContainer,
+            {
+              width: imageSize,
+              height: imageSize,
+              borderRadius: imageSize / 2,
+            },
+          ]}
+        >
+          <Image
+            style={styles.image}
+            source={require("@/assets/images/guessing-game-success.png")}
+          />
+        </View>
+        <Title eyebrow="Game over">Got it!</Title>
+        <Card style={styles.card}>
+          <Text style={styles.summaryText}>
+            Your phone needed{" "}
+            <Text style={styles.highlight}>{roundsNumber}</Text>{" "}
+            {roundsNumber === 1 ? "round" : "rounds"} to guess the number{" "}
+            <Text style={styles.highlight}>{userNumber}</Text>.
+          </Text>
+          <View style={styles.guesses}>
+            {guesses.map((guess, index) => (
+              <Text
+                key={guess}
+                style={[
+                  styles.guessChip,
+                  index === guesses.length - 1 && styles.finalGuessChip,
+                ]}
+              >
+                {guess}
+              </Text>
+            ))}
+          </View>
+          <PrimaryButton onPress={onStartNewGame}>Start New Game</PrimaryButton>
+        </Card>
+      </Container>
     </ScrollView>
   );
 }
@@ -61,40 +82,61 @@ export function GameOverScreen({
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
-    padding: 24,
     justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+  },
+  container: {
     alignItems: "center",
+    gap: Spacing.xl,
   },
   imageContainer: {
     borderWidth: 3,
-    borderColor: Colors.primary800,
+    borderColor: Colors.accent,
     overflow: "hidden",
-    marginVertical: 32,
+    boxShadow: `0 0 0 8px ${Colors.accentSoft}, 0 24px 80px -16px ${Colors.accentGlow}`,
   },
   image: {
     width: "100%",
     height: "100%",
   },
+  card: {
+    gap: Spacing.xl,
+  },
   summaryText: {
     fontFamily: Fonts.regular,
-    fontSize: 22,
-    lineHeight: 32,
-    color: Colors.primary900,
+    fontSize: 18,
+    lineHeight: 28,
+    color: Colors.textMuted,
     textAlign: "center",
   },
   highlight: {
     fontFamily: Fonts.bold,
-    color: Colors.primary500,
+    color: Colors.accent,
   },
-  guessesText: {
-    marginTop: 12,
-    fontFamily: Fonts.regular,
+  guesses: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: Spacing.sm,
+  },
+  guessChip: {
+    minWidth: 40,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.pill,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    fontFamily: Fonts.bold,
     fontSize: 14,
-    color: Colors.primary700,
+    color: Colors.textMuted,
     textAlign: "center",
+    overflow: "hidden",
+    fontVariant: ["tabular-nums"],
   },
-  button: {
-    marginTop: 32,
-    minWidth: 220,
+  finalGuessChip: {
+    borderColor: Colors.accentBorder,
+    backgroundColor: Colors.accentSoft,
+    color: Colors.accent,
   },
 });

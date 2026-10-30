@@ -1,5 +1,6 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 import {
+  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -10,6 +11,8 @@ import {
 
 import { Colors } from "@/constants/colors";
 import { Fonts } from "@/constants/fonts";
+import { Radius, Spacing } from "@/constants/layout";
+import { webStyle } from "@/utils/web-style";
 
 type ButtonVariant = "primary" | "secondary";
 
@@ -27,21 +30,35 @@ export function PrimaryButton({
   accessibilityLabel,
   style,
 }: PrimaryButtonProps) {
+  const [hovered, setHovered] = useState(false);
   const isSecondary = variant === "secondary";
 
   return (
-    <View style={[styles.outerContainer, style]}>
+    <View
+      style={[
+        styles.outerContainer,
+        Platform.OS === "android" && styles.clipped,
+        !isSecondary && styles.primaryShadow,
+        style,
+      ]}
+    >
       <Pressable
         style={({ pressed }) => [
           styles.innerContainer,
-          isSecondary && styles.secondaryContainer,
+          isSecondary ? styles.secondaryContainer : styles.primaryContainer,
+          hovered &&
+            (isSecondary ? styles.secondaryHovered : styles.primaryHovered),
+          pressed &&
+            (isSecondary ? styles.secondaryPressed : styles.primaryPressed),
           pressed && styles.pressed,
         ]}
         onPress={onPress}
+        onHoverIn={() => setHovered(true)}
+        onHoverOut={() => setHovered(false)}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         android_ripple={{
-          color: isSecondary ? Colors.overlay : Colors.primary600,
+          color: isSecondary ? Colors.surfacePressed : Colors.primaryPressed,
         }}
       >
         {typeof children === "string" ? (
@@ -56,32 +73,58 @@ export function PrimaryButton({
 
 const styles = StyleSheet.create({
   outerContainer: {
-    borderRadius: 28,
-    margin: 4,
+    borderRadius: Radius.md,
+  },
+  clipped: {
     overflow: "hidden",
   },
+  primaryShadow: {
+    boxShadow: `0 12px 28px -12px ${Colors.primaryGlow}`,
+  },
   innerContainer: {
-    minHeight: 48,
+    minHeight: 52,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.primary500,
     borderWidth: 1,
-    borderColor: Colors.primary400,
-    borderRadius: 28,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    cursor: "pointer",
+    ...webStyle({
+      transitionProperty: "background-color, border-color, transform",
+      transitionDuration: "150ms",
+      transitionTimingFunction: "ease-out",
+      userSelect: "none",
+    }),
+  },
+  primaryContainer: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primaryHover,
+  },
+  primaryHovered: {
+    backgroundColor: Colors.primaryHover,
+  },
+  primaryPressed: {
+    backgroundColor: Colors.primaryPressed,
   },
   secondaryContainer: {
-    backgroundColor: "transparent",
-    borderColor: Colors.accent500,
+    backgroundColor: Colors.surface,
+    borderColor: Colors.borderStrong,
+  },
+  secondaryHovered: {
+    backgroundColor: Colors.surfaceHover,
+  },
+  secondaryPressed: {
+    backgroundColor: Colors.surfacePressed,
+  },
+  pressed: {
+    transform: [{ scale: 0.98 }],
   },
   text: {
     color: Colors.white,
     fontFamily: Fonts.bold,
     fontSize: 16,
+    letterSpacing: 0.2,
     textAlign: "center",
-  },
-  pressed: {
-    opacity: 0.75,
   },
 });
